@@ -1,7 +1,8 @@
-// ignore_for_file: file_names
+// ignore_for_file: file_names, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:yt_support/Screen/Modal.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class MyHome extends StatefulWidget {
   const MyHome({super.key});
@@ -12,13 +13,30 @@ class MyHome extends StatefulWidget {
 
 class _MyHomeState extends State<MyHome> {
   final urlController = TextEditingController();
-  var tags = 'Tags';
+  var get_resp;
   @override
   void dispose() {
-    // Clean up the controller when the widget is removed from the
-    // widget tree.
     urlController.dispose();
     super.dispose();
+  }
+
+  get_video(TextEditingController urlController) async {
+    var response = await http.post(
+      Uri.parse("http://192.168.2.9:8000/api/get_tag"),
+      body: {
+        "url": urlController.text,
+      },
+    );
+    // return response;
+    if (response.statusCode == 200 || response.statusCode == 202) {
+      var message = jsonDecode(response.body)['Success'];
+      var snackBar = SnackBar(content: Text(message));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else {
+      var message = jsonDecode(response.body)['Error'];
+      var snackBar = SnackBar(content: Text(message));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
   }
 
   @override
@@ -50,6 +68,8 @@ class _MyHomeState extends State<MyHome> {
             ElevatedButton.icon(
               onPressed: () {
                 print(urlController.text);
+                get_resp = get_video(urlController);
+                print(get_resp);
               },
               style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFF0000)),
@@ -57,15 +77,54 @@ class _MyHomeState extends State<MyHome> {
               label: const Text("Get Video"), //label text
             ),
             const SizedBox(height: 100),
+            // if
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton.icon(
                   onPressed: () {
-                    showDialog(
+                    showModalBottomSheet(
                       context: context,
-                      builder: (BuildContext context) => popUpModal(context),
+                      builder: (BuildContext context) {
+                        return ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(20.0),
+                              topRight: Radius.circular(20.0)),
+                          child: Container(
+                            color: Colors.white,
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  leading: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                        onTap: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Icon(Icons
+                                            .arrow_back) // the arrow back icon
+                                        ),
+                                  ),
+                                  title: const Center(
+                                    child: Text(
+                                      "Download",
+                                      style: TextStyle(fontSize: 20),
+                                    ),
+                                  ),
+                                ),
+                                const Text(
+                                  'Title : ',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -77,9 +136,40 @@ class _MyHomeState extends State<MyHome> {
                 const SizedBox(width: 40),
                 ElevatedButton.icon(
                   onPressed: () {
-                    showDialog(
+                    showModalBottomSheet(
                       context: context,
-                      builder: (BuildContext context) => popUpModal(context),
+                      builder: (BuildContext context) {
+                        return ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(20.0),
+                              topRight: Radius.circular(20.0)),
+                          child: Container(
+                            color: Colors.white,
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  leading: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                        onTap: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Icon(Icons
+                                            .arrow_back) // the arrow back icon
+                                        ),
+                                  ),
+                                  title: const Center(
+                                    child: Text(
+                                      "Tags",
+                                      style: TextStyle(fontSize: 20),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -92,39 +182,40 @@ class _MyHomeState extends State<MyHome> {
             const SizedBox(height: 40),
             ElevatedButton.icon(
               onPressed: () {
-                AlertDialog(
-                  content:  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children:  <Widget>[
-                    const Text(
-                      "Title : ", 
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold
+                showModalBottomSheet(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(20.0),
+                          topRight: Radius.circular(20.0)),
+                      child: Container(
+                        color: Colors.white,
+                        child: Column(
+                          children: [
+                            ListTile(
+                              leading: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                    onTap: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: const Icon(
+                                        Icons.arrow_back) // the arrow back icon
+                                    ),
+                              ),
+                              title: const Center(
+                                child: Text(
+                                  "Details",
+                                  style: TextStyle(fontSize: 20),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const Text(
-                      "Connect the TextEditingController to a text field", 
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold
-                      ),
-                    ),
-                    Center(
-                      child: Column(
-                        children: [
-                          ElevatedButton.icon(
-                            onPressed: () => print('object'), 
-                            style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFFF0000)
-                                  ),
-                                  icon: const Icon(Icons.download),  //icon data for elevated button
-                                  label: const Text("Download"),
-                          ),
-                        ],
-                      ),
-                    ),
-                    ],
-                  )
+                    );
+                  },
                 );
               },
               style: ElevatedButton.styleFrom(
