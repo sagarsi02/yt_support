@@ -1,8 +1,9 @@
-// ignore_for_file: file_names, use_build_context_synchronously
+// ignore_for_file: file_names, use_build_context_synchronously, non_constant_identifier_names, prefer_typing_uninitialized_variables
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter/services.dart';
 
 class MyHome extends StatefulWidget {
   const MyHome({super.key});
@@ -14,6 +15,7 @@ class MyHome extends StatefulWidget {
 class _MyHomeState extends State<MyHome> {
   final urlController = TextEditingController();
   var get_resp;
+  var tags;
   @override
   void dispose() {
     urlController.dispose();
@@ -22,15 +24,15 @@ class _MyHomeState extends State<MyHome> {
 
   get_video(TextEditingController urlController) async {
     var response = await http.post(
-      Uri.parse("http://192.168.2.9:8000/api/get_tag"),
+      Uri.parse("http://192.168.133.72:8000/api/get_tag"),
       body: {
         "url": urlController.text,
       },
     );
     // return response;
     if (response.statusCode == 200 || response.statusCode == 202) {
-      var message = jsonDecode(response.body)['Success'];
-      var snackBar = SnackBar(content: Text(message));
+      tags = jsonDecode(response.body)['Success'];
+      var snackBar = const SnackBar(content: Text('Loading'));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {
       var message = jsonDecode(response.body)['Error'];
@@ -67,9 +69,7 @@ class _MyHomeState extends State<MyHome> {
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () {
-                print(urlController.text);
                 get_resp = get_video(urlController);
-                print(get_resp);
               },
               style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFF0000)),
@@ -84,44 +84,15 @@ class _MyHomeState extends State<MyHome> {
               children: [
                 ElevatedButton.icon(
                   onPressed: () {
-                    showModalBottomSheet(
+                    showDialog(
                       context: context,
                       builder: (BuildContext context) {
-                        return ClipRRect(
-                          borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(20.0),
-                              topRight: Radius.circular(20.0)),
-                          child: Container(
-                            color: Colors.white,
-                            child: Column(
-                              children: [
-                                ListTile(
-                                  leading: Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                        onTap: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: const Icon(Icons
-                                            .arrow_back) // the arrow back icon
-                                        ),
-                                  ),
-                                  title: const Center(
-                                    child: Text(
-                                      "Download",
-                                      style: TextStyle(fontSize: 20),
-                                    ),
-                                  ),
-                                ),
-                                const Text(
-                                  'Title : ',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
+                        return AlertDialog(
+                          scrollable: true,
+                          title: const Text('Download'),
+                          content: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(tags),
                           ),
                         );
                       },
@@ -136,85 +107,90 @@ class _MyHomeState extends State<MyHome> {
                 const SizedBox(width: 40),
                 ElevatedButton.icon(
                   onPressed: () {
-                    showModalBottomSheet(
+                    showDialog(
                       context: context,
                       builder: (BuildContext context) {
-                        return ClipRRect(
-                          borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(20.0),
-                              topRight: Radius.circular(20.0)),
-                          child: Container(
-                            color: Colors.white,
-                            child: Column(
-                              children: [
-                                ListTile(
-                                  leading: Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                        onTap: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: const Icon(Icons
-                                            .arrow_back) // the arrow back icon
-                                        ),
-                                  ),
-                                  title: const Center(
-                                    child: Text(
-                                      "Tags",
-                                      style: TextStyle(fontSize: 20),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                        return AlertDialog(
+                          scrollable: true,
+                          title: const Text('Tags'),
+                          content: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(tags),
                           ),
+                          actions: [
+                            ElevatedButton.icon(
+                              onPressed: () async {
+                                await Clipboard.setData(
+                                  ClipboardData(text: tags),
+                                );
+                                var snackBar =
+                                    const SnackBar(content: Text('Copied'));
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(snackBar);
+                                Navigator.pop(context, true);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFFF0000),
+                              ),
+                              icon: const Icon(Icons.copy),
+                              label: const Text("Copy"),
+                            )
+                          ],
                         );
                       },
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF0000)),
+                    backgroundColor: const Color(0xFFFF0000),
+                  ),
                   icon: const Icon(Icons.tag), //icon data for elevated button
                   label: const Text("Get Video Tags"), //label text
-                )
+                ),
               ],
             ),
             const SizedBox(height: 40),
             ElevatedButton.icon(
               onPressed: () {
-                showModalBottomSheet(
+                showDialog(
                   context: context,
                   builder: (BuildContext context) {
-                    return ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(20.0),
-                          topRight: Radius.circular(20.0)),
-                      child: Container(
-                        color: Colors.white,
-                        child: Column(
-                          children: [
-                            ListTile(
-                              leading: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                    onTap: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: const Icon(
-                                        Icons.arrow_back) // the arrow back icon
-                                    ),
-                              ),
-                              title: const Center(
-                                child: Text(
-                                  "Details",
-                                  style: TextStyle(fontSize: 20),
-                                ),
-                              ),
-                            ),
-                          ],
+                    return AlertDialog(
+                      scrollable: true,
+                      title: const Text('Login'),
+                      content: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Form(
+                          child: Column(
+                            children: const[
+                              Text('Title : '),
+                              Text('Description : '),
+                            ],
+                          ),
                         ),
                       ),
+                      actions: [
+                        ElevatedButton(
+                            child: const Text("Submit"),
+                            onPressed: () {
+                              // your code
+                            })
+                      ],
                     );
+                    // return const AlertDialog(
+                    //   scrollable: true,
+                    //   title: Text('Details'),
+                    //   content: Padding(
+                    //     padding: EdgeInsets.all(8.0),
+                    //     // child: Text('Title : '),
+                    //     child: Form(
+                    //       child: Column(
+                    //         children: [
+
+                    //         ],
+                    //       ),
+                    //     ),
+                    //   ),
+                    // );
                   },
                 );
               },
